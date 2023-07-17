@@ -120,8 +120,7 @@ function displayRoutes() {
     dateCell.textContent = dateString;
     
     // const latitudeCell = row.insertCell();
-    // latitudeCell.textContent = route.latitude;
-    
+    // latitudeCell.textContent = route.latitude; 
     // const longitudeCell = row.insertCell();
     // longitudeCell.textContent = route.longitude;
     
