@@ -34,9 +34,6 @@ function initMap() {
   stopBtn.addEventListener('click', stopTracking);
   shareBtn.addEventListener('click', shareData);
 
-  // Cargar la preferencia de notificaciones desde el almacenamiento local
-  loadNotificationPreference();
-
   // Mostrar las rutas almacenadas localmente en la tabla
   displayRoutes();
 }
@@ -115,25 +112,21 @@ function displayRoutes() {
   routes.forEach((route) => {
     const row = tableBody.insertRow();
 
-    // Agregar celdas a la fila con los datos de la ruta
-    // const idCell = row.insertCell();
-    // idCell.textContent = route.id; 
-    // Convert route.id to date
+
     const date = new Date(route.id);
-    // Get date in format dd/mm/yyyy
     const dateString = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-    // Add date to cell
+    
     const dateCell = row.insertCell();
     dateCell.textContent = dateString;
-
-    const latitudeCell = row.insertCell();
-    latitudeCell.textContent = route.latitude;
-
-    const longitudeCell = row.insertCell();
-    longitudeCell.textContent = route.longitude;
-
+    
+    // const latitudeCell = row.insertCell();
+    // latitudeCell.textContent = route.latitude;
+    
+    // const longitudeCell = row.insertCell();
+    // longitudeCell.textContent = route.longitude;
+    
     const distanceCell = row.insertCell();
-    distanceCell.textContent = route.distance + ' km'; // Mostrar la distancia total de la ruta
+    distanceCell.textContent = route.distance + ' km';
   });
 
   // Mostrar la tabla si hay rutas disponibles, ocultarla si no hay rutas
@@ -171,12 +164,7 @@ function getRoutesFromLocalStorage() {
   return JSON.parse(localStorage.getItem('rutas')) || [];
 }
 
-// Función para cargar la preferencia de notificaciones desde el almacenamiento local
-function loadNotificationPreference() {
-  const notificationCheckbox = document.getElementById('notificationCheckbox');
-  const preference = JSON.parse(localStorage.getItem('notificationPreference')) || false;
-  notificationCheckbox.checked = preference;
-}
+
 
 document.addEventListener('DOMContentLoaded', initMap);
 

@@ -23,23 +23,24 @@
     <div class="row justify-content-center">
       <div class="col-md-6 col-sm-8 col-10 bg-light p-3 rounded text-center">
         <h2>Distancia Recorrida</h2>
-        <p id="distance" class="display-4">0.00 km</p>
+        <p id="distance" class="display-2">0.00 km</p>
         <button id="startBtn" class="btn btn-primary btn-lg m-2">Inicio</button>
         <button id="stopBtn" class="btn btn-danger btn-lg m-2">Salida</button>
         <button id="shareBtn" class="btn btn-secondary btn-lg m-2">Compartir Datos</button>
         <button id="refreshBtn" class="btn btn-primary btn-lg m-2">Refrescar</button>
+        <!-- Tabla para ver las rutas hechas -->
+        <div class="row justify-content-center align-items-center">
+          <table id="routesTable" style="display: none;">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Distancia</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
-      <!-- Tabla para ver las rutas hechas -->
-      <table id="routesTable" style="display: none;">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Latitude</th>
-            <th>Longitude</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
     </div>
   </div>
   <!-- ... Script Mapa ... -->
