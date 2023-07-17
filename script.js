@@ -1,5 +1,9 @@
-// Variables globales para almacenar datos
 let map, prevLocation, totalDistance, isTracking;
+
+function refreshPage() {
+  location.reload();
+  localStorage.clear();
+}
 
 // Función para inicializar el mapa y los botones
 function initMap() {
@@ -25,26 +29,33 @@ function initMap() {
   const startBtn = document.getElementById('startBtn');
   const stopBtn = document.getElementById('stopBtn');
   const shareBtn = document.getElementById('shareBtn');
-  const notificationCheckbox = document.getElementById('notificationCheckbox');
 
   startBtn.addEventListener('click', startTracking);
   stopBtn.addEventListener('click', stopTracking);
   shareBtn.addEventListener('click', shareData);
-  notificationCheckbox.addEventListener('change', saveNotificationPreference);
 
   // Cargar la preferencia de notificaciones desde el almacenamiento local
   loadNotificationPreference();
+
+  // Mostrar las rutas almacenadas localmente en la tabla
+  displayRoutes();
 }
 
 // Función para iniciar el seguimiento de la ubicación
 function startTracking() {
   isTracking = true;
+  totalDistance = 0;
   document.getElementById('distance').innerText = '0.00 km';
 }
 
 // Función para detener el seguimiento de la ubicación
 function stopTracking() {
   isTracking = false;
+  document.getElementById('distance').innerText = '0.00 km';
+  if (prevLocation && L.marker) {
+    map.removeLayer(prevLocation);
+    prevLocation = null;
+  }
 }
 
 // Función para actualizar la ubicación y calcular la distancia
@@ -54,12 +65,26 @@ function updateLocation(position) {
 
   // Si tenemos una ubicación anterior, calculamos la distancia recorrida
   if (prevLocation && isTracking) {
-    const distance = currentLocation.distanceTo(prevLocation); // En metros
-    totalDistance += distance / 1000; // Convertimos a kilómetros
+    const distance = currentLocation.distanceTo(prevLocation);
+    totalDistance += distance / 1000; 
     document.getElementById('distance').innerText = totalDistance.toFixed(2) + ' km';
+
+    // Guardar la nueva ubicación en el almacenamiento local como una ruta con un ID único
+    const route = {
+      id: Date.now(), // Generar un ID único basado en la marca de tiempo actual
+      latitude: currentLocation.lat,
+      longitude: currentLocation.lng,
+      distance: totalDistance.toFixed(2) // Agregar la distancia total de la ruta
+    };
+
+    // Obtener las rutas almacenadas localmente
+    const routes = getRoutesFromLocalStorage();
+    routes.push(route);
+
+    // Guardar las rutas actualizadas en el almacenamiento local
+    localStorage.setItem('rutas', JSON.stringify(routes));
   }
 
-  // Actualizamos la ubicación anterior
   prevLocation = currentLocation;
 
   // Mueve el marcador del usuario a la nueva ubicación
@@ -69,22 +94,51 @@ function updateLocation(position) {
     L.marker(currentLocation).addTo(map).setLatLng(currentLocation);
   }
 
-  // Centramos el mapa en la nueva ubicación
   map.setView(currentLocation, 13);
+
+  // Actualizar la tabla de rutas para mostrar las rutas almacenadas localmente
+  displayRoutes();
 }
 
-// Función para guardar la preferencia de notificaciones en el almacenamiento local
-function saveNotificationPreference() {
-  const notificationCheckbox = document.getElementById('notificationCheckbox');
-  const preference = notificationCheckbox.checked;
-  localStorage.setItem('notificationPreference', JSON.stringify(preference));
-}
+// Función para mostrar las rutas en la tabla
+function displayRoutes() {
+  // Obtener las rutas almacenadas localmente
+  const routes = getRoutesFromLocalStorage();
 
-// Función para cargar la preferencia de notificaciones desde el almacenamiento local
-function loadNotificationPreference() {
-  const notificationCheckbox = document.getElementById('notificationCheckbox');
-  const preference = JSON.parse(localStorage.getItem('notificationPreference')) || false;
-  notificationCheckbox.checked = preference;
+  // Obtener la referencia al cuerpo de la tabla
+  const tableBody = document.querySelector('#routesTable tbody');
+
+  // Limpiar la tabla antes de mostrar las rutas para evitar duplicados
+  tableBody.innerHTML = '';
+
+  // Recorrer las rutas y agregar una fila por cada una
+  routes.forEach((route) => {
+    const row = tableBody.insertRow();
+
+    // Agregar celdas a la fila con los datos de la ruta
+    // const idCell = row.insertCell();
+    // idCell.textContent = route.id; 
+    // Convert route.id to date
+    const date = new Date(route.id);
+    // Get date in format dd/mm/yyyy
+    const dateString = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+    // Add date to cell
+    const dateCell = row.insertCell();
+    dateCell.textContent = dateString;
+
+    const latitudeCell = row.insertCell();
+    latitudeCell.textContent = route.latitude;
+
+    const longitudeCell = row.insertCell();
+    longitudeCell.textContent = route.longitude;
+
+    const distanceCell = row.insertCell();
+    distanceCell.textContent = route.distance + ' km'; // Mostrar la distancia total de la ruta
+  });
+
+  // Mostrar la tabla si hay rutas disponibles, ocultarla si no hay rutas
+  const routesTable = document.getElementById('routesTable');
+  routesTable.style.display = routes.length > 0 ? 'table' : 'none';
 }
 
 // Función para compartir los datos almacenados localmente
@@ -100,12 +154,31 @@ function shareData() {
 
   // Limpiar la URL creada después de que el usuario descargue el archivo
   URL.revokeObjectURL(url);
+
+  // Reiniciar la distancia total y actualizar la visualización
+  totalDistance = 0;
+  document.getElementById('distance').innerText = '0.00 km';
+
+  // También puedes borrar el marcador del mapa y la ubicación anterior si lo deseas
+  if (prevLocation && L.marker) {
+    map.removeLayer(prevLocation);
+    prevLocation = null;
+  }
 }
 
-// Obtener las rutas almacenadas localmente
+// Función para obtener las rutas almacenadas localmente
 function getRoutesFromLocalStorage() {
   return JSON.parse(localStorage.getItem('rutas')) || [];
 }
 
-// Inicializar el mapa cuando se cargue la página
+// Función para cargar la preferencia de notificaciones desde el almacenamiento local
+function loadNotificationPreference() {
+  const notificationCheckbox = document.getElementById('notificationCheckbox');
+  const preference = JSON.parse(localStorage.getItem('notificationPreference')) || false;
+  notificationCheckbox.checked = preference;
+}
+
 document.addEventListener('DOMContentLoaded', initMap);
+
+const refreshBtn = document.getElementById('refreshBtn');
+refreshBtn.addEventListener('click', refreshPage);
